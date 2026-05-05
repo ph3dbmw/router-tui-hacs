@@ -24,9 +24,16 @@ class RouterDataUpdateCoordinator(DataUpdateCoordinator):
                 home_data = await self.client.get_home_data()
 
             hosts = await self.client.get_hosts()
+            guest_wifi = await self.client.get_guest_wifi()
+            firewall = await self.client.get_firewall()
+            mesh_nodes = await self.client.get_mesh_nodes()
+            
             return {
                 "home": home_data,
                 "hosts": hosts,
+                "guest_wifi": guest_wifi,
+                "firewall": firewall,
+                "mesh_nodes": mesh_nodes,
             }
         except Exception as err:
             raise UpdateFailed(f"Error communicating with API: {err}")

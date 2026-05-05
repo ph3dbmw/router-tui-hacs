@@ -132,5 +132,21 @@ class RouterClient:
             return data[0].get("hosts", {}).get("list", [])
         return []
 
+    async def get_guest_wifi(self) -> Optional[Dict[str, Any]]:
+        data = await self.get_setting("wireless/guest/settings", version="v1")
+        if data and isinstance(data, list) and len(data) > 0:
+            return data[0]
+        return None
+
+    async def get_firewall(self) -> Optional[Dict[str, Any]]:
+        data = await self.get_setting("firewall", version="v2")
+        if data and isinstance(data, list) and len(data) > 0:
+            return data[0]
+        return data if isinstance(data, dict) else {}
+
+    async def get_mesh_nodes(self) -> list:
+        data = await self.get_setting("oper/easymesh")
+        return data if isinstance(data, list) else []
+
     async def close(self):
         await self.client.aclose()

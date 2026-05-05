@@ -19,6 +19,7 @@ class RouterDeviceTracker(CoordinatorEntity, ScannerEntity):
         super().__init__(coordinator)
         self.host_data = host_data
         self._mac = self.host_data.get("macaddress") or self.host_data.get("MACAddress")
+        self._attr_unique_id = f"router_tui_{self._mac}"
         
     @property
     def name(self):
