@@ -9,7 +9,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
         RouterHostsSensor(coordinator),
         RouterFirewallSensor(coordinator),
         RouterGuestWifiSensor(coordinator),
-        RouterMeshSensor(coordinator)
+        RouterMeshSensor(coordinator),
+        RouterEndpointsSensor(coordinator)
     ]
     
     async_add_entities(entities)
@@ -74,3 +75,18 @@ class RouterMeshSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         return {"nodes": self.coordinator.data.get("mesh_nodes", [])}
+
+class RouterEndpointsSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "Router Advanced Endpoints"
+        self._attr_unique_id = "router_advanced_endpoints"
+
+    @property
+    def native_value(self):
+        endpoints = self.coordinator.data.get("all_endpoints", {})
+        return f"{len(endpoints)} Active Endpoints"
+        
+    @property
+    def extra_state_attributes(self):
+        return self.coordinator.data.get("all_endpoints", {})

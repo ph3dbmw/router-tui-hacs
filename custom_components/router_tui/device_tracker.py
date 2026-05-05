@@ -7,9 +7,11 @@ async def async_setup_entry(hass, entry, async_add_entities):
     
     hosts = coordinator.data.get("hosts", [])
     entities = []
+    seen_macs = set()
     for host in hosts:
         mac = host.get("macaddress") or host.get("MACAddress")
-        if mac:
+        if mac and mac not in seen_macs:
+            seen_macs.add(mac)
             entities.append(RouterDeviceTracker(coordinator, host))
             
     async_add_entities(entities)

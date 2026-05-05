@@ -148,5 +148,28 @@ class RouterClient:
         data = await self.get_setting("oper/easymesh")
         return data if isinstance(data, list) else []
 
+    async def get_all_endpoints(self) -> dict:
+        endpoints = {
+            "dhcp": "dhcp",
+            "dns_v4": "dns/ipv4",
+            "dns_v6": "dns/ipv6",
+            "wifi_24": "wifi/2.4GHz/priv/basic",
+            "wifi_5": "wifi/5GHz/priv/basic",
+            "nat_rules": "nat/rules",
+            "nat_dmz": "nat/dmz",
+            "upnp": "advanced/upnp",
+            "static_leases": "dhcp/clients",
+        }
+        
+        results = {}
+        for key, ep in endpoints.items():
+            try:
+                data = await self.get_setting(ep)
+                if data:
+                    results[key] = data
+            except Exception:
+                results[key] = None
+        return results
+
     async def close(self):
         await self.client.aclose()
