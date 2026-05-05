@@ -6,7 +6,7 @@ from .client import RouterClient
 from .coordinator import RouterDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS = ["sensor", "device_tracker"]
+PLATFORMS = ["sensor", "device_tracker", "switch", "select"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})

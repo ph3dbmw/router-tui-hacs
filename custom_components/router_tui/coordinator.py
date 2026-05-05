@@ -27,6 +27,7 @@ class RouterDataUpdateCoordinator(DataUpdateCoordinator):
             guest_wifi = await self.client.get_guest_wifi()
             firewall = await self.client.get_firewall()
             mesh_nodes = await self.client.get_mesh_nodes()
+            band_steering = await self.client.get_band_steering()
             all_endpoints = await self.client.get_all_endpoints()
             
             return {
@@ -35,6 +36,7 @@ class RouterDataUpdateCoordinator(DataUpdateCoordinator):
                 "guest_wifi": guest_wifi,
                 "firewall": firewall,
                 "mesh_nodes": mesh_nodes,
+                "band_steering": band_steering,
                 "all_endpoints": all_endpoints,
             }
         except Exception as err:

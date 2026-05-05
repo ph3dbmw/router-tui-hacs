@@ -7,10 +7,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
     
     entities = [
         RouterHostsSensor(coordinator),
-        RouterFirewallSensor(coordinator),
-        RouterGuestWifiSensor(coordinator),
         RouterMeshSensor(coordinator),
-        RouterEndpointsSensor(coordinator)
+        RouterEndpointsSensor(coordinator),
+        RouterNatRulesSensor(coordinator),
+        RouterStaticLeasesSensor(coordinator),
+        RouterWifi24Sensor(coordinator),
+        RouterWifi5Sensor(coordinator)
     ]
     
     async_add_entities(entities)
@@ -32,34 +34,6 @@ class RouterHostsSensor(CoordinatorEntity, SensorEntity):
             "all_hosts": self.coordinator.data.get("hosts", []),
             "home_data": self.coordinator.data.get("home", {})
         }
-
-class RouterFirewallSensor(CoordinatorEntity, SensorEntity):
-    def __init__(self, coordinator):
-        super().__init__(coordinator)
-        self._attr_name = "Router Firewall Level"
-        self._attr_unique_id = "router_firewall_sensor"
-
-    @property
-    def native_value(self):
-        firewall = self.coordinator.data.get("firewall", {})
-        level = firewall.get("firewall", {}).get("level", "Unknown")
-        return level
-
-class RouterGuestWifiSensor(CoordinatorEntity, SensorEntity):
-    def __init__(self, coordinator):
-        super().__init__(coordinator)
-        self._attr_name = "Router Guest Wi-Fi"
-        self._attr_unique_id = "router_guest_wifi_sensor"
-
-    @property
-    def native_value(self):
-        guest = self.coordinator.data.get("guest_wifi", {})
-        status = guest.get("wireless", {}).get("guest", {}).get("settings", {}).get("ssidStatus", "Unknown")
-        return status
-        
-    @property
-    def extra_state_attributes(self):
-        return self.coordinator.data.get("guest_wifi", {})
 
 class RouterMeshSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator):
@@ -90,3 +64,88 @@ class RouterEndpointsSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         return self.coordinator.data.get("all_endpoints", {})
+
+class RouterNatRulesSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "Router Port Forwarding Rules"
+        self._attr_unique_id = "router_port_forwarding"
+        self._attr_icon = "mdi:port"
+
+    @property
+    def native_value(self):
+        rules = self.coordinator.data.get("all_endpoints", {}).get("nat_rules", [])
+        if isinstance(rules, list):
+            # Sometimes it's a list, sometimes dict with 'list' key
+            return len(rules)
+        if isinstance(rules, dict):
+            rules_list = rules.get("nat", {}).get("portforwarding", {}).get("list", [])
+            return len(rules_list)
+        return 0
+        
+    @property
+    def extra_state_attributes(self):
+        return self.coordinator.data.get("all_endpoints", {}).get("nat_rules", {})
+
+class RouterStaticLeasesSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "Router Static DHCP Leases"
+        self._attr_unique_id = "router_static_leases"
+        self._attr_icon = "mdi:ip-network"
+
+    @property
+    def native_value(self):
+        leases = self.coordinator.data.get("all_endpoints", {}).get("static_leases", {})
+        if isinstance(leases, dict):
+            l = leases.get("dhcp", {}).get("clients", {}).get("list", [])
+            return len(l)
+        return 0
+
+class RouterWifi24Sensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "Router 2.4GHz Wi-Fi Status"
+        self._attr_unique_id = "router_wifi_24"
+        self._attr_icon = "mdi:wifi"
+
+    @property
+    def native_value(self):
+        home = self.coordinator.data.get("home", {})
+        ssids = home.get("ssids", [])
+        for s in ssids:
+            if s.get("radio") == "2_4GHZ" and s.get("type") == "Primary":
+                return s.get("ssidStatus", "Unknown")
+        return "Unknown"
+        
+    @property
+    def extra_state_attributes(self):
+        home = self.coordinator.data.get("home", {})
+        for s in home.get("ssids", []):
+            if s.get("radio") == "2_4GHZ" and s.get("type") == "Primary":
+                return s
+        return {}
+
+class RouterWifi5Sensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "Router 5GHz Wi-Fi Status"
+        self._attr_unique_id = "router_wifi_5"
+        self._attr_icon = "mdi:wifi-strength-4"
+
+    @property
+    def native_value(self):
+        home = self.coordinator.data.get("home", {})
+        ssids = home.get("ssids", [])
+        for s in ssids:
+            if s.get("radio") == "5GHZ" and s.get("type") == "Primary":
+                return s.get("ssidStatus", "Unknown")
+        return "Unknown"
+        
+    @property
+    def extra_state_attributes(self):
+        home = self.coordinator.data.get("home", {})
+        for s in home.get("ssids", []):
+            if s.get("radio") == "5GHZ" and s.get("type") == "Primary":
+                return s
+        return {}

@@ -148,6 +148,48 @@ class RouterClient:
         data = await self.get_setting("oper/easymesh")
         return data if isinstance(data, list) else []
 
+    async def get_band_steering(self) -> dict:
+        data = await self.get_setting("wireless/bandsteering")
+        if data and isinstance(data, list) and len(data) > 0:
+            return data[0]
+        return data if isinstance(data, dict) else {}
+
+    async def set_band_steering(self, enable: bool) -> bool:
+        payload = {"BandSteeringEnable": "true" if enable else "false"}
+        return await self.post_setting("wireless/bandsteering", payload)
+
+    async def post_setting(self, endpoint: str, data: Dict[str, Any], version: str = "v1") -> bool:
+        url = f"{self.base_url}/api/{version}/{endpoint.lstrip('/')}"
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        token = self.client.cookies.get("__Host-csrf_token")
+        if token:
+            self.csrf_token = token
+            headers["X-CSRF-Token"] = self.csrf_token
+        elif self.csrf_token:
+            headers["X-CSRF-Token"] = self.csrf_token
+        try:
+            payload = urllib.parse.urlencode(data)
+            response = await self.client.post(url, content=payload, headers=headers)
+            self._log_request("POST", url, payload=payload, status=response.status_code)
+            return response.status_code in (200, 204)
+        except Exception:
+            return False
+
+    async def put_setting(self, endpoint: str, data: Dict[str, Any], version: str = "v1") -> bool:
+        url = f"{self.base_url}/api/{version}/{endpoint.lstrip('/')}"
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        token = self.client.cookies.get("__Host-csrf_token")
+        if token:
+            headers["X-CSRF-Token"] = token
+            headers["X-Requested-With"] = "XMLHttpRequest"
+        try:
+            payload = urllib.parse.urlencode(data)
+            response = await self.client.put(url, content=payload, headers=headers)
+            self._log_request("PUT", url, payload=payload, status=response.status_code)
+            return response.status_code in (200, 204)
+        except Exception:
+            return False
+
     async def get_all_endpoints(self) -> dict:
         endpoints = {
             "dhcp": "dhcp",
