@@ -6,7 +6,7 @@ import urllib.parse
 import datetime
 import logging
 from typing import Optional, Dict, Any, Union
-from passlib.hash import sha512_crypt
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,6 +61,7 @@ class RouterClient:
             # Step 2: Calculate the challenge response
             
             # A. SHA512-crypt the password with the salt ($6$)
+            from passlib.hash import sha512_crypt
             crypt_result = sha512_crypt.using(salt=salt, rounds=5000).hash(p)
             
             # B. Skip the "$6$" prefix as per JS substring(3)
