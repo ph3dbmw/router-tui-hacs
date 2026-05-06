@@ -1,6 +1,14 @@
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.entity import DeviceInfo
 from .const import DOMAIN
+
+ROUTER_DEVICE_INFO = DeviceInfo(
+    identifiers={(DOMAIN, "sagemcom_router")},
+    name="Sagemcom F@st Router",
+    manufacturer="Sagemcom",
+    model="F@st Router",
+)
 
 async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = hass.data[DOMAIN][entry.entry_id]
@@ -20,8 +28,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class RouterHostsSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router Connected Hosts"
+        self._attr_name = "Connected Hosts"
         self._attr_unique_id = "router_hosts_sensor"
+        self._attr_device_info = ROUTER_DEVICE_INFO
 
     @property
     def native_value(self):
@@ -38,8 +47,9 @@ class RouterHostsSensor(CoordinatorEntity, SensorEntity):
 class RouterMeshSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router Mesh Nodes"
+        self._attr_name = "Mesh Nodes"
         self._attr_unique_id = "router_mesh_sensor"
+        self._attr_device_info = ROUTER_DEVICE_INFO
 
     @property
     def native_value(self):
@@ -53,8 +63,9 @@ class RouterMeshSensor(CoordinatorEntity, SensorEntity):
 class RouterEndpointsSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router Advanced Endpoints"
+        self._attr_name = "Advanced Endpoints"
         self._attr_unique_id = "router_advanced_endpoints"
+        self._attr_device_info = ROUTER_DEVICE_INFO
 
     @property
     def native_value(self):
@@ -68,9 +79,10 @@ class RouterEndpointsSensor(CoordinatorEntity, SensorEntity):
 class RouterNatRulesSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router Port Forwarding Rules"
+        self._attr_name = "Port Forwarding Rules"
         self._attr_unique_id = "router_port_forwarding"
         self._attr_icon = "mdi:port"
+        self._attr_device_info = ROUTER_DEVICE_INFO
 
     @property
     def native_value(self):
@@ -90,9 +102,10 @@ class RouterNatRulesSensor(CoordinatorEntity, SensorEntity):
 class RouterStaticLeasesSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router Static DHCP Leases"
+        self._attr_name = "Static DHCP Leases"
         self._attr_unique_id = "router_static_leases"
         self._attr_icon = "mdi:ip-network"
+        self._attr_device_info = ROUTER_DEVICE_INFO
 
     @property
     def native_value(self):
@@ -105,9 +118,10 @@ class RouterStaticLeasesSensor(CoordinatorEntity, SensorEntity):
 class RouterWifi24Sensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router 2.4GHz Wi-Fi Status"
+        self._attr_name = "2.4GHz Wi-Fi Status"
         self._attr_unique_id = "router_wifi_24"
         self._attr_icon = "mdi:wifi"
+        self._attr_device_info = ROUTER_DEVICE_INFO
 
     @property
     def native_value(self):
@@ -129,9 +143,10 @@ class RouterWifi24Sensor(CoordinatorEntity, SensorEntity):
 class RouterWifi5Sensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router 5GHz Wi-Fi Status"
+        self._attr_name = "5GHz Wi-Fi Status"
         self._attr_unique_id = "router_wifi_5"
         self._attr_icon = "mdi:wifi-strength-4"
+        self._attr_device_info = ROUTER_DEVICE_INFO
 
     @property
     def native_value(self):

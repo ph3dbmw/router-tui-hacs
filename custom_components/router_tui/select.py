@@ -1,6 +1,14 @@
 from homeassistant.components.select import SelectEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.entity import DeviceInfo
 from .const import DOMAIN
+
+ROUTER_DEVICE_INFO = DeviceInfo(
+    identifiers={(DOMAIN, "sagemcom_router")},
+    name="Sagemcom F@st Router",
+    manufacturer="Sagemcom",
+    model="F@st Router",
+)
 
 async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = hass.data[DOMAIN][entry.entry_id]
@@ -9,10 +17,11 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class RouterFirewallSelect(CoordinatorEntity, SelectEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router Firewall Level"
+        self._attr_name = "Firewall Level"
         self._attr_unique_id = "router_firewall_select"
         self._attr_options = ["Low", "Medium", "High"]
         self._attr_icon = "mdi:wall-fire"
+        self._attr_device_info = ROUTER_DEVICE_INFO
 
     @property
     def current_option(self):

@@ -1,7 +1,15 @@
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.entity import DeviceInfo
 from .const import DOMAIN
 import logging
+
+ROUTER_DEVICE_INFO = DeviceInfo(
+    identifiers={(DOMAIN, "sagemcom_router")},
+    name="Sagemcom F@st Router",
+    manufacturer="Sagemcom",
+    model="F@st Router",
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,9 +27,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class RouterBandSteeringSwitch(CoordinatorEntity, SwitchEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router Band Steering"
+        self._attr_name = "Band Steering"
         self._attr_unique_id = "router_band_steering"
         self._attr_icon = "mdi:router-wireless"
+        self._attr_device_info = ROUTER_DEVICE_INFO
         
     @property
     def is_on(self):
@@ -41,9 +50,10 @@ class RouterBandSteeringSwitch(CoordinatorEntity, SwitchEntity):
 class RouterUpnpSwitch(CoordinatorEntity, SwitchEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router UPnP"
+        self._attr_name = "UPnP"
         self._attr_unique_id = "router_upnp"
         self._attr_icon = "mdi:network"
+        self._attr_device_info = ROUTER_DEVICE_INFO
         
     @property
     def is_on(self):
@@ -63,9 +73,10 @@ class RouterUpnpSwitch(CoordinatorEntity, SwitchEntity):
 class RouterGuestWifiSwitch(CoordinatorEntity, SwitchEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Router Guest Wi-Fi"
+        self._attr_name = "Guest Wi-Fi"
         self._attr_unique_id = "router_guest_wifi_switch"
         self._attr_icon = "mdi:wifi-account"
+        self._attr_device_info = ROUTER_DEVICE_INFO
         
     @property
     def is_on(self):
