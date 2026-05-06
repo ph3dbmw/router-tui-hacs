@@ -197,10 +197,15 @@ class RouterClient:
             "dns_v6": "dns/ipv6",
             "wifi_24": "wifi/2.4GHz/priv/basic",
             "wifi_5": "wifi/5GHz/priv/basic",
+            "wifi_24_stats": "wifi/2.4GHz/priv/stats",
+            "wifi_5_stats": "wifi/5GHz/priv/stats",
             "nat_rules": "nat/rules",
             "nat_dmz": "nat/dmz",
             "upnp": "advanced/upnp",
             "static_leases": "dhcp/clients",
+            "wan": "wan",
+            "connection": "connection",
+            "deviceinfo": "deviceinfo"
         }
         
         results = {}

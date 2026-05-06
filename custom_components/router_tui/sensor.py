@@ -20,7 +20,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
         RouterNatRulesSensor(coordinator),
         RouterStaticLeasesSensor(coordinator),
         RouterWifi24Sensor(coordinator),
-        RouterWifi5Sensor(coordinator)
+        RouterWifi5Sensor(coordinator),
+        RouterWifi24DataSentSensor(coordinator),
+        RouterWifi24DataReceivedSensor(coordinator),
+        RouterWifi5DataSentSensor(coordinator),
+        RouterWifi5DataReceivedSensor(coordinator),
+        RouterExternalIPSensor(coordinator)
     ]
     
     async_add_entities(entities)
@@ -164,3 +169,101 @@ class RouterWifi5Sensor(CoordinatorEntity, SensorEntity):
             if s.get("radio") == "5GHZ" and s.get("type") == "Primary":
                 return s
         return {}
+
+def extract_bytes(data: dict, keys: list) -> int:
+    def _search(d):
+        if not isinstance(d, dict): return None
+        for k, v in d.items():
+            if str(k).lower() in keys:
+                try: return int(v)
+                except: pass
+            if isinstance(v, dict):
+                res = _search(v)
+                if res is not None: return res
+        return None
+    res = _search(data)
+    return res if res else 0
+
+class RouterWifi24DataSentSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "2.4GHz Upload (Sent) Data"
+        self._attr_unique_id = "router_wifi_24_sent"
+        self._attr_icon = "mdi:upload-network"
+        self._attr_device_class = "data_size"
+        self._attr_native_unit_of_measurement = "B"
+        self._attr_device_info = ROUTER_DEVICE_INFO
+
+    @property
+    def native_value(self):
+        stats = self.coordinator.data.get("all_endpoints", {}).get("wifi_24_stats", {})
+        return extract_bytes(stats, ["rxbytes", "bytesreceived"])
+
+class RouterWifi24DataReceivedSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "2.4GHz Download (Received) Data"
+        self._attr_unique_id = "router_wifi_24_recv"
+        self._attr_icon = "mdi:download-network"
+        self._attr_device_class = "data_size"
+        self._attr_native_unit_of_measurement = "B"
+        self._attr_device_info = ROUTER_DEVICE_INFO
+
+    @property
+    def native_value(self):
+        stats = self.coordinator.data.get("all_endpoints", {}).get("wifi_24_stats", {})
+        return extract_bytes(stats, ["txbytes", "bytessent"])
+
+class RouterWifi5DataSentSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "5GHz Upload (Sent) Data"
+        self._attr_unique_id = "router_wifi_5_sent"
+        self._attr_icon = "mdi:upload-network"
+        self._attr_device_class = "data_size"
+        self._attr_native_unit_of_measurement = "B"
+        self._attr_device_info = ROUTER_DEVICE_INFO
+
+    @property
+    def native_value(self):
+        stats = self.coordinator.data.get("all_endpoints", {}).get("wifi_5_stats", {})
+        return extract_bytes(stats, ["rxbytes", "bytesreceived"])
+
+class RouterWifi5DataReceivedSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "5GHz Download (Received) Data"
+        self._attr_unique_id = "router_wifi_5_recv"
+        self._attr_icon = "mdi:download-network"
+        self._attr_device_class = "data_size"
+        self._attr_native_unit_of_measurement = "B"
+        self._attr_device_info = ROUTER_DEVICE_INFO
+
+    @property
+    def native_value(self):
+        stats = self.coordinator.data.get("all_endpoints", {}).get("wifi_5_stats", {})
+        return extract_bytes(stats, ["txbytes", "bytessent"])
+
+class RouterExternalIPSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "Public IP / WAN IP"
+        self._attr_unique_id = "router_external_ip"
+        self._attr_icon = "mdi:web"
+        self._attr_device_info = ROUTER_DEVICE_INFO
+
+    @property
+    def native_value(self):
+        endpoints = self.coordinator.data.get("all_endpoints", {})
+        for ep in ["connection", "wan", "deviceinfo"]:
+            data = endpoints.get(ep, {})
+            if isinstance(data, dict):
+                ip = str(data.get("ipaddress") or data.get("IPAddress") or "")
+                if ip and not ip.startswith("192.168.") and not ip.startswith("10.") and not ip.startswith("172."):
+                    return ip
+                for k, v in data.items():
+                    if isinstance(v, dict):
+                        ip = str(v.get("ipaddress") or v.get("IPAddress") or "")
+                        if ip and not ip.startswith("192.168.") and not ip.startswith("10.") and not ip.startswith("172."):
+                            return ip
+        return "Unknown"
