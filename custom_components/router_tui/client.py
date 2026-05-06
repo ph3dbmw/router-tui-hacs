@@ -197,15 +197,14 @@ class RouterClient:
             "dns_v6": "dns/ipv6",
             "wifi_24": "wifi/2.4GHz/priv/basic",
             "wifi_5": "wifi/5GHz/priv/basic",
-            "wifi_24_stats": "wifi/2.4GHz/priv/stats",
-            "wifi_5_stats": "wifi/5GHz/priv/stats",
             "nat_rules": "nat/rules",
             "nat_dmz": "nat/dmz",
             "upnp": "advanced/upnp",
             "static_leases": "dhcp/clients",
             "wan": "wan",
             "connection": "connection",
-            "deviceinfo": "deviceinfo"
+            "deviceinfo": "deviceinfo",
+            "open": "open"
         }
         
         results = {}
@@ -216,6 +215,22 @@ class RouterClient:
                     results[key] = data
             except Exception:
                 results[key] = None
+
+        # Fetch v2 stats correctly
+        try:
+            stats_24 = await self.get_setting("wireless/stats/24", version="v2")
+            if stats_24 and isinstance(stats_24, list) and len(stats_24) > 0:
+                results["wifi_24_stats"] = stats_24[0]
+        except Exception:
+            results["wifi_24_stats"] = None
+
+        try:
+            stats_5 = await self.get_setting("wireless/stats/5", version="v2")
+            if stats_5 and isinstance(stats_5, list) and len(stats_5) > 0:
+                results["wifi_5_stats"] = stats_5[0]
+        except Exception:
+            results["wifi_5_stats"] = None
+
         return results
 
     async def close(self):

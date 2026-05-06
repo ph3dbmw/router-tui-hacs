@@ -257,6 +257,15 @@ class RouterExternalIPSensor(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self):
         endpoints = self.coordinator.data.get("all_endpoints", {})
+        
+        # 1. Try 'open' endpoint (used by app.py)
+        open_data = endpoints.get("open")
+        if open_data and isinstance(open_data, list) and len(open_data) > 0 and isinstance(open_data[0], dict):
+            ip = open_data[0].get("wan_ipv4")
+            if ip and ip != "N/A":
+                return ip
+
+        # 2. Fallback to others
         for ep in ["connection", "wan", "deviceinfo"]:
             data = endpoints.get(ep, {})
             if isinstance(data, dict):
