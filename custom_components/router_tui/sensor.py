@@ -25,7 +25,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
         RouterWifi24DataReceivedSensor(coordinator),
         RouterWifi5DataSentSensor(coordinator),
         RouterWifi5DataReceivedSensor(coordinator),
-        RouterExternalIPSensor(coordinator)
+        RouterExternalIPSensor(coordinator),
+        RouterWifi24ClientsSensor(coordinator),
+        RouterWifi5ClientsSensor(coordinator)
     ]
     
     async_add_entities(entities)
@@ -267,3 +269,57 @@ class RouterExternalIPSensor(CoordinatorEntity, SensorEntity):
                         if ip and not ip.startswith("192.168.") and not ip.startswith("10.") and not ip.startswith("172."):
                             return ip
         return "Unknown"
+
+class RouterWifi24ClientsSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "2.4GHz Connected Devices"
+        self._attr_unique_id = "router_wifi_24_clients"
+        self._attr_icon = "mdi:devices"
+        self._attr_device_info = ROUTER_DEVICE_INFO
+
+    def _get_clients(self):
+        clients = []
+        wireless_list = self.coordinator.data.get("home", {}).get("wirelessListDevice", [])
+        for dev in wireless_list:
+            links = dev.get("linkDevices", [])
+            for link in links:
+                if str(link.get("band", "")).startswith("2.4"):
+                    clients.append(dev)
+                    break
+        return clients
+
+    @property
+    def native_value(self):
+        return len(self._get_clients())
+
+    @property
+    def extra_state_attributes(self):
+        return {"devices": self._get_clients()}
+
+class RouterWifi5ClientsSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "5GHz Connected Devices"
+        self._attr_unique_id = "router_wifi_5_clients"
+        self._attr_icon = "mdi:devices"
+        self._attr_device_info = ROUTER_DEVICE_INFO
+
+    def _get_clients(self):
+        clients = []
+        wireless_list = self.coordinator.data.get("home", {}).get("wirelessListDevice", [])
+        for dev in wireless_list:
+            links = dev.get("linkDevices", [])
+            for link in links:
+                if str(link.get("band", "")).startswith("5"):
+                    clients.append(dev)
+                    break
+        return clients
+
+    @property
+    def native_value(self):
+        return len(self._get_clients())
+
+    @property
+    def extra_state_attributes(self):
+        return {"devices": self._get_clients()}
